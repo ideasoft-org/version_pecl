@@ -1,0 +1,99 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "php.h"
+#include "php_version.h"
+#include <glib.h>
+
+static zend_function_entry version_functions[] = {
+    PHP_FE(version_check, NULL)
+    PHP_FE(version_template, NULL)
+    {NULL, NULL, NULL}
+};
+
+zend_module_entry version_module_entry = {
+#if ZEND_MODULE_API_NO >= 20010901
+    STANDARD_MODULE_HEADER,
+#endif
+    PHP_VERSION_EXTNAME,
+    version_functions,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+#if ZEND_MODULE_API_NO >= 20010901
+    PHP_VERSION_VERSION,
+#endif
+    STANDARD_MODULE_PROPERTIES
+};
+
+#ifdef COMPILE_DL_VERSION
+ZEND_GET_MODULE(version)
+#endif
+
+PHP_FUNCTION(version_check)
+{
+	int i;
+    GArray* garray;
+    for (i = 0; i < 10000; i++)
+  g_array_append_val (garray, i);
+for (i = 0; i < 10000; i++)
+  if (g_array_index (garray, gint, i) != i)
+    g_print ("ERROR: got %d instead of %d\n",
+             g_array_index (garray, gint, i), i);
+g_array_free (garray, TRUE);
+
+    RETURN_STRING("Version module.\n");
+}
+
+PHP_FUNCTION(version_template)
+{
+
+    zval* vars;
+    zval* tpl;
+    
+    zval *data;
+    HashTable *ht;
+
+    zend_ulong num_idx;
+    zend_string *str_idx;
+      
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz", &tpl, &vars) == FAILURE) { 
+        RETURN_NULL();
+    }
+
+    if (Z_TYPE_P(tpl) != IS_STRING) {
+	RETURN_NULL();
+    } 
+
+    if (Z_TYPE_P(vars) != IS_ARRAY) {
+	RETURN_NULL();
+    } 
+
+    convert_to_string(tpl);
+//    convert_to_array(vars);
+
+    ht = Z_ARRVAL_P(vars);
+
+
+    ZEND_HASH_FOREACH_KEY_VAL(ht, num_idx, str_idx, data)
+	
+        if (Z_TYPE_P(data) == IS_STRING) {
+            //php_printf("%s - %s\n",str_idx->val, Z_STRVAL_P(data));
+
+            char* key = str_idx->val;
+            char* val = Z_STRVAL_P(data);
+
+            char search_key[255];
+
+            sprintf(search_key, "{{%s}}", key);
+        }
+    ZEND_HASH_FOREACH_END();
+
+
+    RETURN_STRING(Z_STRVAL_P(tpl));	
+}
+
+
+
